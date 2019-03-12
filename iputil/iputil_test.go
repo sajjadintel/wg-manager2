@@ -13,15 +13,15 @@ var ipv6Net = net.ParseIP("fc00:bbbb:bbbb:bb01::")
 func TestIpv4(t *testing.T) {
 	tests := []struct {
 		LeastSignificant int
-		ExpectedResult   net.IP
+		ExpectedResult   string
 	}{
-		{1, net.ParseIP("10.99.0.1")},
-		{10, net.ParseIP("10.99.0.10")},
-		{100, net.ParseIP("10.99.0.100")},
-		{1000, net.ParseIP("10.99.3.232")},
-		{10000, net.ParseIP("10.99.39.16")},
-		{100000, net.ParseIP("10.100.134.160")},
-		{4120707071, net.ParseIP("255.255.255.255")},
+		{1, "10.99.0.1/32"},
+		{10, "10.99.0.10/32"},
+		{100, "10.99.0.100/32"},
+		{1000, "10.99.3.232/32"},
+		{10000, "10.99.39.16/32"},
+		{100000, "10.100.134.160/32"},
+		{4120707071, "255.255.255.255/32"},
 	}
 
 	for _, test := range tests {
@@ -30,7 +30,7 @@ func TestIpv4(t *testing.T) {
 			t.Errorf("%d: %+v", test.LeastSignificant, err)
 		}
 
-		if !ip.Equal(test.ExpectedResult) {
+		if ip.String() != test.ExpectedResult {
 			t.Errorf("%d: got %s, expected %s", test.LeastSignificant, ip, test.ExpectedResult)
 		}
 	}
@@ -50,14 +50,14 @@ func TestInvalidIpv4(t *testing.T) {
 func TestIpv6(t *testing.T) {
 	tests := []struct {
 		LeastSignificant int
-		ExpectedResult   net.IP
+		ExpectedResult   string
 	}{
-		{1, net.ParseIP("fc00:bbbb:bbbb:bb01::1")},
-		{10, net.ParseIP("fc00:bbbb:bbbb:bb01::a")},
-		{100, net.ParseIP("fc00:bbbb:bbbb:bb01::64")},
-		{1000, net.ParseIP("fc00:bbbb:bbbb:bb01::3e8")},
-		{10000, net.ParseIP("fc00:bbbb:bbbb:bb01::2710")},
-		{100000, net.ParseIP("fc00:bbbb:bbbb:bb01::1:86a0")},
+		{1, "fc00:bbbb:bbbb:bb01::1/128"},
+		{10, "fc00:bbbb:bbbb:bb01::a/128"},
+		{100, "fc00:bbbb:bbbb:bb01::64/128"},
+		{1000, "fc00:bbbb:bbbb:bb01::3e8/128"},
+		{10000, "fc00:bbbb:bbbb:bb01::2710/128"},
+		{100000, "fc00:bbbb:bbbb:bb01::1:86a0/128"},
 	}
 
 	for _, test := range tests {
@@ -66,7 +66,7 @@ func TestIpv6(t *testing.T) {
 			t.Errorf("%d: %+v", test.LeastSignificant, err)
 		}
 
-		if !ip.Equal(test.ExpectedResult) {
+		if ip.String() != test.ExpectedResult {
 			t.Errorf("%d: got %s, expected %s", test.LeastSignificant, ip, test.ExpectedResult)
 		}
 	}

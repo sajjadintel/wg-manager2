@@ -8,14 +8,17 @@ import (
 )
 
 // GetIPv4 returns an ipv4 from the given subnet, with the given least significant bits
-func GetIPv4(ipv4Net net.IP, ipLeastSig int) (ipv4 net.IP, err error) {
+func GetIPv4(ipv4Net net.IP, ipLeastSig int) (ipv4 *net.IPNet, err error) {
 	ip, err := ipv4ToInt(ipv4Net)
 	if err != nil {
 		return nil, err
 	}
 
 	ip += uint32(ipLeastSig)
-	return int2ipv4(ip), nil
+	return &net.IPNet{
+		IP:   int2ipv4(ip),
+		Mask: net.CIDRMask(32, 32),
+	}, nil
 }
 
 func ipv4ToInt(ip net.IP) (uint32, error) {
@@ -34,14 +37,17 @@ func int2ipv4(nn uint32) net.IP {
 }
 
 // GetIPv6 returns an ipv6 from the given subnet, with the given least significant bits
-func GetIPv6(ipv6Net net.IP, ipLeastSig int) (ipv6 net.IP, err error) {
+func GetIPv6(ipv6Net net.IP, ipLeastSig int) (ipv6 *net.IPNet, err error) {
 	ip, err := ipv6ToInt(ipv6Net)
 	if err != nil {
 		return nil, err
 	}
 
 	ip = ip.Add(ip, big.NewInt(int64(ipLeastSig)))
-	return int2ipv6(ip), nil
+	return &net.IPNet{
+		IP:   int2ipv6(ip),
+		Mask: net.CIDRMask(128, 128),
+	}, nil
 }
 
 func ipv6ToInt(ip net.IP) (*big.Int, error) {
