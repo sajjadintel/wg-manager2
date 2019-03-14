@@ -50,5 +50,4 @@ func (a *API) GetWireguardPeers() (WireguardPeerList, error) {
 	}
 
 	return decodedResponse, nil
-
 }

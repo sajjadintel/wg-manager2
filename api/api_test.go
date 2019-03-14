@@ -3,6 +3,7 @@ package api_test
 import (
 	"encoding/json"
 	"reflect"
+	"strings"
 
 	"net/http"
 	"net/http/httptest"
@@ -15,7 +16,7 @@ var fixture = api.WireguardPeerList{
 	api.WireguardPeer{
 		IPLeastsig: 1,
 		Ports:      []int{1234, 4321},
-		Pubkey:     "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+		Pubkey:     strings.Repeat("a", 44),
 	},
 }
 

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/big"
 	"net"
+	"sort"
 )
 
 // GetIPv4 returns an ipv4 from the given subnet, with the given least significant bits
@@ -64,4 +65,33 @@ func ipv6ToInt(ip net.IP) (*big.Int, error) {
 func int2ipv6(nn *big.Int) net.IP {
 	ip := net.IP(nn.Bytes())
 	return ip
+}
+
+// sortIPNet sorts a slice of IPNet
+func sortIPNet(ips []net.IPNet) func(i int, j int) bool {
+	return func(i int, j int) bool {
+		return ips[i].String() < ips[j].String()
+	}
+}
+
+// EqualIPNet checks whether two slices of IPNet are equal
+func EqualIPNet(a []net.IPNet, b []net.IPNet) bool {
+	if (a == nil) != (b == nil) {
+		return false
+	}
+
+	if len(a) != len(b) {
+		return false
+	}
+
+	sort.Slice(a, sortIPNet(a))
+	sort.Slice(b, sortIPNet(b))
+
+	for i := range a {
+		if a[i].String() != b[i].String() {
+			return false
+		}
+	}
+
+	return true
 }
