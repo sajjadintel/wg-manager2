@@ -46,7 +46,7 @@ func (a *API) GetWireguardPeers() (WireguardPeerList, error) {
 	var decodedResponse WireguardPeerList
 	err = json.Unmarshal(body, &decodedResponse)
 	if err != nil {
-		return WireguardPeerList{}, fmt.Errorf("error decoding %s, %s", body, err.Error())
+		return WireguardPeerList{}, fmt.Errorf("error decoding wireguard peers")
 	}
 
 	return decodedResponse, nil
