@@ -10,8 +10,8 @@ github.com/mdlayher/genetlink v0.0.0-20190313224034-60417448a851 h1:QYJTEbSDJvDB
 github.com/mdlayher/genetlink v0.0.0-20190313224034-60417448a851/go.mod h1:EsbsAEUEs15qC1cosAwxgCWV0Qhd8TmkxnA9Kw1Vhl4=
 github.com/mdlayher/netlink v0.0.0-20190313131330-258ea9dff42c h1:qYXI+3AN4zBWsTF5drEu1akWPu2juaXPs58tZ4/GaCg=
 github.com/mdlayher/netlink v0.0.0-20190313131330-258ea9dff42c/go.mod h1:eQB3mZE4aiYnlUsyGGCOpPETfdQq4Jhsgf1fk3cwQaA=
-github.com/mdlayher/wireguardctrl v0.0.0-20190313224109-71fabb657240 h1:TDdTqoAMNkytGgmfAAcn9FlHyJR6zPgVODxNN8IIsqE=
-github.com/mdlayher/wireguardctrl v0.0.0-20190313224109-71fabb657240/go.mod h1:BdyuvE2RP0RjONNIBHLdaVM7iarlHbioRUbsVXeOAJM=
+github.com/mdlayher/wireguardctrl v0.0.0-20190318190647-8a114cef8e87 h1:e8wH/mMeY4D9IZPhsqKJ+p6QDX7i/VFgBxfHzEiS7pM=
+github.com/mdlayher/wireguardctrl v0.0.0-20190318190647-8a114cef8e87/go.mod h1:BdyuvE2RP0RjONNIBHLdaVM7iarlHbioRUbsVXeOAJM=
 github.com/mikioh/ipaddr v0.0.0-20190227002745-725a6cbe920e h1:Pa/tBadWnc5p6P32+GcWt20TvPB9dqlDbBn81oWptqE=
 github.com/mikioh/ipaddr v0.0.0-20190227002745-725a6cbe920e/go.mod h1:Ickgr2WtCLZ2MDGd4Gr0geeCH5HybhRJbonOgQpvSxc=
 github.com/spf13/cobra v0.0.3 h1:ZlrZ4XsMRm04Fr5pSFxBgfND2EBVa1nLpiy1stUsX/8=
