@@ -67,13 +67,6 @@ func int2ipv6(nn *big.Int) net.IP {
 	return ip
 }
 
-// sortIPNet sorts a slice of IPNet
-func sortIPNet(ips []net.IPNet) func(i int, j int) bool {
-	return func(i int, j int) bool {
-		return ips[i].String() < ips[j].String()
-	}
-}
-
 // EqualIPNet checks whether two slices of IPNet are equal
 func EqualIPNet(a []net.IPNet, b []net.IPNet) bool {
 	if (a == nil) != (b == nil) {
@@ -84,8 +77,8 @@ func EqualIPNet(a []net.IPNet, b []net.IPNet) bool {
 		return false
 	}
 
-	sort.Slice(a, sortIPNet(a))
-	sort.Slice(b, sortIPNet(b))
+	sort.Slice(a, compareIPNet(a))
+	sort.Slice(b, compareIPNet(b))
 
 	for i := range a {
 		if a[i].String() != b[i].String() {
@@ -94,4 +87,10 @@ func EqualIPNet(a []net.IPNet, b []net.IPNet) bool {
 	}
 
 	return true
+}
+
+func compareIPNet(ips []net.IPNet) func(i int, j int) bool {
+	return func(i int, j int) bool {
+		return ips[i].String() < ips[j].String()
+	}
 }
