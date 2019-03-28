@@ -99,7 +99,7 @@ func (w *Wireguard) UpdatePeers(peers api.WireguardPeerList) {
 	}
 }
 
-// Take the wireguard peers and convert them into a map for easier comparision
+// Take the wireguard peers and convert them into a map for easier comparison
 func (w *Wireguard) mapPeers(peers api.WireguardPeerList) (peerMap map[wgtypes.Key][]net.IPNet) {
 	peerMap = make(map[wgtypes.Key][]net.IPNet)
 
@@ -134,7 +134,7 @@ func (w *Wireguard) mapPeers(peers api.WireguardPeerList) (peerMap map[wgtypes.K
 	return
 }
 
-// Take the existing wireguard peers and convert them into a map for easier comparision
+// Take the existing wireguard peers and convert them into a map for easier comparison
 func mapExistingPeers(peers []wgtypes.Peer) (peerMap map[wgtypes.Key][]net.IPNet) {
 	peerMap = make(map[wgtypes.Key][]net.IPNet)
 
