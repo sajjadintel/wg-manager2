@@ -38,6 +38,8 @@ func (a *API) GetWireguardPeers() (WireguardPeerList, error) {
 		return WireguardPeerList{}, err
 	}
 
+	defer response.Body.Close()
+
 	body, err := ioutil.ReadAll(response.Body)
 	if err != nil {
 		return WireguardPeerList{}, err
