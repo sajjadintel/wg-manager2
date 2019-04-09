@@ -1,5 +1,7 @@
 github.com/DMarby/jitter v0.0.0-20190312004500-d77fd504dcfa h1:NtaE9hLsBcU0LhFSV1rl2iQLpfUepj2MYXt9NBBMXUg=
 github.com/DMarby/jitter v0.0.0-20190312004500-d77fd504dcfa/go.mod h1:j0Yp6kL88yADKYqXdmnzxZSCVXQ5lbd/hXNv8eE+PbQ=
+github.com/coreos/go-iptables v0.4.0 h1:wh4UbVs8DhLUbpyq97GLJDKrQMjEDD63T1xE4CrsKzQ=
+github.com/coreos/go-iptables v0.4.0/go.mod h1:/mVI274lEDI2ns62jHCDnCyBF9Iwsmekav8Dbxlm1MU=
 github.com/google/go-cmp v0.2.0 h1:+dTQ8DZQJz0Mb/HjFlkptS1FeQ4cWSnN941F8aEG4SQ=
 github.com/google/go-cmp v0.2.0/go.mod h1:oXzfMopK8JAjlY9xF4vHSVASa0yLyX7SntLO5aqRK0M=
 github.com/inconshreveable/mousetrap v1.0.0 h1:Z8tu5sraLXCXIcARxBp/8cbvlwVa7Z1NHg9XEKhtSvM=

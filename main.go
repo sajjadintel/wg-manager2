@@ -17,11 +17,14 @@ import (
 	"github.com/DMarby/jitter"
 	"github.com/jamiealquiza/envy"
 	"github.com/mullvad/wireguard-manager/api"
+	"github.com/mullvad/wireguard-manager/portforward"
 	"github.com/mullvad/wireguard-manager/wireguard"
 )
 
+
 var a *api.API
 var wg *wireguard.Wireguard
+var pf *portforward.Portforward
 
 func main() {
 	// Set up commandline flags
@@ -33,6 +36,8 @@ func main() {
 	interfaces := flag.String("interfaces", "wg0", "wireguard interfaces to configure. Pass a comma delimited list to configure multiple interfaces, eg 'wg0,wg1,wg2'")
 	ipv4Net := flag.String("ipv4_net", "10.99.0.0/16", "ipv4 net to use for peer ip addresses")
 	ipv6Net := flag.String("ipv6_net", "fc00:bbbb:bbbb:bb01::/64", "ipv4 net to use for peer ip addresses")
+	portForwardingChain := flag.String("portforwarding-chain", "PORTFORWARDING", "iptables chain to use for portforwarding")
+	portForwardingExitAddresses := flag.String("portforwarding-exit-addresses", "", "exit addresses to use for portforwarding. Pass a comma delimited list to configure multiple IPs, eg '127.0.0.1,127.0.0.2'")
 
 	// Parse environment variables
 	envy.Parse("WG")
@@ -50,8 +55,6 @@ func main() {
 		log.Fatalf("invalid ipv6 net %s", err)
 	}
 
-	interfacesList := strings.Split(*interfaces, ",")
-
 	// Initialize the API
 	a = &api.API{
 		Username: *username,
@@ -63,11 +66,29 @@ func main() {
 	}
 
 	// Initialize Wireguard
+	if *interfaces == "" {
+		log.Fatalf("no portforwarding exit addresses configured")
+	}
+
+	interfacesList := strings.Split(*interfaces, ",")
+
 	wg, err = wireguard.New(interfacesList, ipv4, ipv6)
 	if err != nil {
 		log.Fatalf("error initializing wireguard %s", err)
 	}
 	defer wg.Close()
+
+	// Initialize portforward
+	if *portForwardingExitAddresses == "" {
+		log.Fatalf("no portforwarding exit addresses configured")
+	}
+
+	addressesList := strings.Split(*portForwardingExitAddresses, ",")
+
+	pf, err = portforward.New(addressesList, *portForwardingChain, ipv4, ipv6)
+	if err != nil {
+		log.Fatalf("error initializing portforwarding %s", err)
+	}
 
 	// Set up context for shutting down
 	shutdownCtx, shutdown := context.WithCancel(context.Background())
@@ -105,6 +126,7 @@ func synchronize() {
 	}
 
 	wg.UpdatePeers(peers)
+	pf.UpdatePortforwarding(peers)
 }
 
 func waitForInterrupt(ctx context.Context) error {
