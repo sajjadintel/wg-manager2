@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-// API is a utility for communicating with the
+// API is a utility for communicating with the Mullvad API
 type API struct {
 	Username string
 	Password string
