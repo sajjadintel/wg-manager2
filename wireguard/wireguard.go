@@ -7,8 +7,6 @@ import (
 
 	"github.com/mullvad/wireguard-manager/api"
 
-	"encoding/base64"
-
 	"github.com/mdlayher/wireguardctrl"
 	"github.com/mdlayher/wireguardctrl/wgtypes"
 	"github.com/mullvad/wireguard-manager/iputil"
@@ -105,12 +103,7 @@ func (w *Wireguard) mapPeers(peers api.WireguardPeerList) (peerMap map[wgtypes.K
 
 	// Ignore peers with errors, in-case we get bad data from the API
 	for _, peer := range peers {
-		decoded, err := base64.StdEncoding.DecodeString(peer.Pubkey)
-		if err != nil {
-			continue
-		}
-
-		key, err := wgtypes.NewKey(decoded)
+		key, err := wgtypes.ParseKey(peer.Pubkey)
 		if err != nil {
 			continue
 		}
