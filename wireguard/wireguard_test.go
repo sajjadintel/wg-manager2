@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/infosum/statsd"
 	"github.com/mdlayher/wireguardctrl"
 	"github.com/mdlayher/wireguardctrl/wgtypes"
 	"github.com/mullvad/wireguard-manager/api"
@@ -54,14 +55,20 @@ func TestWireguard(t *testing.T) {
 		t.Skip("skipping integration tests")
 	}
 
+	metrics, err := statsd.New()
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	client, err := wireguardctrl.New()
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	defer client.Close()
 	defer resetDevice(t, client)
 
-	wg, err := wireguard.New([]string{testInterface}, ipv4Net, ipv6Net)
+	wg, err := wireguard.New([]string{testInterface}, ipv4Net, ipv6Net, metrics)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -130,7 +137,7 @@ func TestInvalidInterface(t *testing.T) {
 
 	interfaceName := "nonexistant"
 
-	_, err := wireguard.New([]string{interfaceName}, net.ParseIP("127.0.0.1"), net.ParseIP("::1"))
+	_, err := wireguard.New([]string{interfaceName}, net.ParseIP("127.0.0.1"), net.ParseIP("::1"), nil)
 	if err == nil {
 		t.Fatal("no error")
 	}

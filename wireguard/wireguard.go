@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"time"
 
+	"github.com/infosum/statsd"
 	"github.com/mullvad/wireguard-manager/api"
 
 	"github.com/mdlayher/wireguardctrl"
@@ -18,10 +20,11 @@ type Wireguard struct {
 	interfaces []string
 	ipv4Net    net.IP
 	ipv6Net    net.IP
+	metrics    *statsd.Client
 }
 
 // New ensures that the interfaces given are valid, and returns a new Wireguard instance
-func New(interfaces []string, ipv4Net net.IP, ipv6Net net.IP) (*Wireguard, error) {
+func New(interfaces []string, ipv4Net net.IP, ipv6Net net.IP, metrics *statsd.Client) (*Wireguard, error) {
 	client, err := wireguardctrl.New()
 	if err != nil {
 		return nil, err
@@ -39,6 +42,7 @@ func New(interfaces []string, ipv4Net net.IP, ipv6Net net.IP) (*Wireguard, error
 		interfaces: interfaces,
 		ipv4Net:    ipv4Net,
 		ipv6Net:    ipv6Net,
+		metrics:    metrics,
 	}, nil
 }
 
@@ -46,6 +50,7 @@ func New(interfaces []string, ipv4Net net.IP, ipv6Net net.IP) (*Wireguard, error
 func (w *Wireguard) UpdatePeers(peers api.WireguardPeerList) {
 	peerMap := w.mapPeers(peers)
 
+	var connectedPeers int
 	for _, d := range w.interfaces {
 		device, err := w.client.Device(d)
 		// Log an error, but move on, so that one broken wireguard interface doesn't prevent us from configuring the rest
@@ -54,8 +59,9 @@ func (w *Wireguard) UpdatePeers(peers api.WireguardPeerList) {
 			continue
 		}
 
-		existingPeerMap := mapExistingPeers(device.Peers)
+		connectedPeers += countConnectedPeers(device.Peers)
 
+		existingPeerMap := mapExistingPeers(device.Peers)
 		cfgPeers := []wgtypes.PeerConfig{}
 
 		// Loop through peers from the API
@@ -95,6 +101,9 @@ func (w *Wireguard) UpdatePeers(peers api.WireguardPeerList) {
 			continue
 		}
 	}
+
+	// Send metrics
+	w.metrics.Gauge("connected_peers", connectedPeers)
 }
 
 // Take the wireguard peers and convert them into a map for easier comparison
@@ -133,6 +142,21 @@ func mapExistingPeers(peers []wgtypes.Peer) (peerMap map[wgtypes.Key][]net.IPNet
 
 	for _, peer := range peers {
 		peerMap[peer.PublicKey] = peer.AllowedIPs
+	}
+
+	return
+}
+
+// Wireguard sends a handshake roughly every 2 minutes
+// So we consider all peers with a handshake within that interval to be connected
+const handshakeInterval = time.Minute * 2
+
+// Count the connected wireguard peers
+func countConnectedPeers(peers []wgtypes.Peer) (connectedPeers int) {
+	for _, peer := range peers {
+		if time.Since(peer.LastHandshakeTime) <= handshakeInterval {
+			connectedPeers++
+		}
 	}
 
 	return

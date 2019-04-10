@@ -15,16 +15,19 @@ import (
 	"time"
 
 	"github.com/DMarby/jitter"
+	"github.com/infosum/statsd"
 	"github.com/jamiealquiza/envy"
 	"github.com/mullvad/wireguard-manager/api"
 	"github.com/mullvad/wireguard-manager/portforward"
 	"github.com/mullvad/wireguard-manager/wireguard"
 )
 
-
-var a *api.API
-var wg *wireguard.Wireguard
-var pf *portforward.Portforward
+var (
+	a       *api.API
+	wg      *wireguard.Wireguard
+	pf      *portforward.Portforward
+	metrics *statsd.Client
+)
 
 func main() {
 	// Set up commandline flags
@@ -38,6 +41,7 @@ func main() {
 	ipv6Net := flag.String("ipv6_net", "fc00:bbbb:bbbb:bb01::/64", "ipv4 net to use for peer ip addresses")
 	portForwardingChain := flag.String("portforwarding-chain", "PORTFORWARDING", "iptables chain to use for portforwarding")
 	portForwardingExitAddresses := flag.String("portforwarding-exit-addresses", "", "exit addresses to use for portforwarding. Pass a comma delimited list to configure multiple IPs, eg '127.0.0.1,127.0.0.2'")
+	statsdAddress := flag.String("statsd-address", "127.0.0.1:8125", "statsd address to send metrics to")
 
 	// Parse environment variables
 	envy.Parse("WG")
@@ -54,6 +58,13 @@ func main() {
 	if err != nil {
 		log.Fatalf("invalid ipv6 net %s", err)
 	}
+
+	// Initialize metrics
+	metrics, err = statsd.New(statsd.TagsFormat(statsd.Datadog), statsd.Prefix("wireguard-manager"), statsd.Address(*statsdAddress))
+	if err != nil {
+		log.Fatalf("Error initializing metrics %s", err)
+	}
+	defer metrics.Close()
 
 	// Initialize the API
 	a = &api.API{
@@ -72,7 +83,7 @@ func main() {
 
 	interfacesList := strings.Split(*interfaces, ",")
 
-	wg, err = wireguard.New(interfacesList, ipv4, ipv6)
+	wg, err = wireguard.New(interfacesList, ipv4, ipv6, metrics)
 	if err != nil {
 		log.Fatalf("error initializing wireguard %s", err)
 	}
@@ -121,6 +132,7 @@ func main() {
 func synchronize() {
 	peers, err := a.GetWireguardPeers()
 	if err != nil {
+		metrics.Increment("error_getting_peers")
 		log.Printf("error getting peers %s", err.Error())
 		return
 	}
