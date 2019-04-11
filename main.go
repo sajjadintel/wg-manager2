@@ -78,7 +78,7 @@ func main() {
 
 	// Initialize Wireguard
 	if *interfaces == "" {
-		log.Fatalf("no portforwarding exit addresses configured")
+		log.Fatalf("no wireguard interfaces configured")
 	}
 
 	interfacesList := strings.Split(*interfaces, ",")
