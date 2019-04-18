@@ -31,7 +31,10 @@ func (a *API) GetWireguardPeers() (WireguardPeerList, error) {
 	if err != nil {
 		return WireguardPeerList{}, err
 	}
-	req.SetBasicAuth(a.Username, a.Password)
+
+	if a.Username != "" && a.Password != "" {
+		req.SetBasicAuth(a.Username, a.Password)
+	}
 
 	response, err := a.Client.Do(req)
 	if err != nil {

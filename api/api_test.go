@@ -30,8 +30,10 @@ func TestAPI(t *testing.T) {
 
 	// Use Client & URL from our local test server
 	api := api.API{
-		BaseURL: server.URL,
-		Client:  server.Client(),
+		BaseURL:  server.URL,
+		Client:   server.Client(),
+		Username: "foo",
+		Password: "bar",
 	}
 
 	peers, err := api.GetWireguardPeers()
