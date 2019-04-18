@@ -17,7 +17,7 @@ func GetIPv4(ipv4Net net.IP, ipLeastSig int) (ipv4 *net.IPNet, err error) {
 
 	ip += uint32(ipLeastSig)
 	return &net.IPNet{
-		IP:   int2ipv4(ip),
+		IP:   intToIpv4(ip),
 		Mask: net.CIDRMask(32, 32),
 	}, nil
 }
@@ -31,7 +31,7 @@ func ipv4ToInt(ip net.IP) (uint32, error) {
 	return binary.BigEndian.Uint32(ipv4), nil
 }
 
-func int2ipv4(nn uint32) net.IP {
+func intToIpv4(nn uint32) net.IP {
 	ip := make(net.IP, 4)
 	binary.BigEndian.PutUint32(ip, nn)
 	return ip
@@ -46,7 +46,7 @@ func GetIPv6(ipv6Net net.IP, ipLeastSig int) (ipv6 *net.IPNet, err error) {
 
 	ip = ip.Add(ip, big.NewInt(int64(ipLeastSig)))
 	return &net.IPNet{
-		IP:   int2ipv6(ip),
+		IP:   intToIpv6(ip),
 		Mask: net.CIDRMask(128, 128),
 	}, nil
 }
@@ -62,7 +62,7 @@ func ipv6ToInt(ip net.IP) (*big.Int, error) {
 	return ipv6Int, nil
 }
 
-func int2ipv6(nn *big.Int) net.IP {
+func intToIpv6(nn *big.Int) net.IP {
 	ip := net.IP(nn.Bytes())
 	return ip
 }
