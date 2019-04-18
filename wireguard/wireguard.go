@@ -162,7 +162,7 @@ func countConnectedPeers(peers []wgtypes.Peer) (connectedPeers int) {
 	return
 }
 
-// Close closes the underlying wireguad client
+// Close closes the underlying wireguard client
 func (w *Wireguard) Close() {
 	w.client.Close()
 }
