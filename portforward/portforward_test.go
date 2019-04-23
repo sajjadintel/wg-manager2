@@ -12,6 +12,9 @@ import (
 	"github.com/mullvad/wireguard-manager/portforward"
 )
 
+// Integration tests for portforwarding, not ran in short mode
+// Requires an iptables nat chain named PORTFORWARDING in both iptables and ip6tables
+
 var apiFixture = api.WireguardPeerList{
 	api.WireguardPeer{
 		IPLeastsig: 1,
