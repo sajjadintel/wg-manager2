@@ -9,14 +9,14 @@ import (
 	"github.com/infosum/statsd"
 	"github.com/mullvad/wireguard-manager/api"
 
-	"github.com/mdlayher/wireguardctrl"
-	"github.com/mdlayher/wireguardctrl/wgtypes"
 	"github.com/mullvad/wireguard-manager/iputil"
+	"golang.zx2c4.com/wireguard/wgctrl"
+	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )
 
 // Wireguard is a utility for managing wireguard configuration
 type Wireguard struct {
-	client     *wireguardctrl.Client
+	client     *wgctrl.Client
 	interfaces []string
 	ipv4Net    net.IP
 	ipv6Net    net.IP
@@ -25,7 +25,7 @@ type Wireguard struct {
 
 // New ensures that the interfaces given are valid, and returns a new Wireguard instance
 func New(interfaces []string, ipv4Net net.IP, ipv6Net net.IP, metrics *statsd.Client) (*Wireguard, error) {
-	client, err := wireguardctrl.New()
+	client, err := wgctrl.New()
 	if err != nil {
 		return nil, err
 	}
