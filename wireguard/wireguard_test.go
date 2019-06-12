@@ -8,10 +8,10 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/infosum/statsd"
-	"github.com/mdlayher/wireguardctrl"
-	"github.com/mdlayher/wireguardctrl/wgtypes"
 	"github.com/mullvad/wireguard-manager/api"
 	"github.com/mullvad/wireguard-manager/wireguard"
+	"golang.zx2c4.com/wireguard/wgctrl"
+	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )
 
 // Integration tests for wireguard, not ran in short mode
@@ -60,7 +60,7 @@ func TestWireguard(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	client, err := wireguardctrl.New()
+	client, err := wgctrl.New()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -118,7 +118,7 @@ func TestWireguard(t *testing.T) {
 	})
 }
 
-func resetDevice(t *testing.T, c *wireguardctrl.Client) {
+func resetDevice(t *testing.T, c *wgctrl.Client) {
 	t.Helper()
 
 	cfg := wgtypes.Config{
