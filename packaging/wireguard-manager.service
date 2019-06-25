@@ -1,0 +1,12 @@
+[Unit]
+Description=wireguard manager
+After=network.target
+
+[Service]
+User=wireguard-manager
+AmbientCapabilities=CAP_NET_ADMIN CAP_NET_RAW
+EnvironmentFile=/etc/default/wireguard-manager
+ExecStart=/usr/local/bin/wireguard-manager
+
+[Install]
+WantedBy=multi-user.target

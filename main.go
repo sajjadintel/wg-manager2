@@ -23,10 +23,11 @@ import (
 )
 
 var (
-	a       *api.API
-	wg      *wireguard.Wireguard
-	pf      *portforward.Portforward
-	metrics *statsd.Client
+	a          *api.API
+	wg         *wireguard.Wireguard
+	pf         *portforward.Portforward
+	metrics    *statsd.Client
+	appVersion string // Populated during build time
 )
 
 func main() {
@@ -46,8 +47,18 @@ func main() {
 	// Parse environment variables
 	envy.Parse("WG")
 
+	// Add flag to output the version
+	version := flag.Bool("v", false, "prints current app version")
+
 	// Parse commandline flags
 	flag.Parse()
+
+	if *version {
+		fmt.Println(appVersion)
+		os.Exit(0)
+	}
+
+	log.Printf("starting wireguard-manager %s", appVersion)
 
 	ipv4, _, err := net.ParseCIDR(*ipv4Net)
 	if err != nil {
