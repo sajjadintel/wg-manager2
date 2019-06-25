@@ -60,7 +60,7 @@ func main() {
 	}
 
 	// Initialize metrics
-	metrics, err = statsd.New(statsd.TagsFormat(statsd.Datadog), statsd.Prefix("wireguard-manager"), statsd.Address(*statsdAddress))
+	metrics, err = statsd.New(statsd.TagsFormat(statsd.Datadog), statsd.Prefix("wireguard"), statsd.Address(*statsdAddress))
 	if err != nil {
 		log.Fatalf("Error initializing metrics %s", err)
 	}
