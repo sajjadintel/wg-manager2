@@ -1,4 +1,4 @@
-.PHONY: fmt test vet install package
+.PHONY: fmt test vet install nfpm package
 all: test vet install
 
 LATEST_TAG_COMMIT = $(shell git rev-list --tags --max-count=1)
@@ -16,6 +16,11 @@ vet:
 install:
 	go install ./...
 
-package:
+nfpm:
 	go build -ldflags "-X main.appVersion=$$VERSION" .
-	nfpm --config packaging/nfpm.yaml pkg --target wireguard-manager.deb
+	mkdir -p build
+	nfpm --config packaging/nfpm.yaml pkg --target ./build/wireguard-manager.deb
+
+package:
+	docker build . -t wireguard-manager
+	docker run --rm -v $(PWD)/build:/wireguard-manager/build wireguard-manager
