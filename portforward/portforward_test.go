@@ -25,7 +25,9 @@ var apiFixture = api.WireguardPeerList{
 
 var rulesFixture = []string{
 	"-A PORTFORWARDING -d 127.0.0.1/32 -p tcp -m multiport --dports 1234,4321 -j DNAT --to-destination 10.99.0.1",
+	"-A PORTFORWARDING -d 127.0.0.1/32 -p udp -m multiport --dports 1234,4321 -j DNAT --to-destination 10.99.0.1",
 	"-A PORTFORWARDING -d ::1/128 -p tcp -m multiport --dports 1234,4321 -j DNAT --to-destination fc00:bbbb:bbbb:bb01::1",
+	"-A PORTFORWARDING -d ::1/128 -p udp -m multiport --dports 1234,4321 -j DNAT --to-destination fc00:bbbb:bbbb:bb01::1",
 }
 
 var ipv4Net = net.ParseIP("10.99.0.0")
@@ -41,7 +43,7 @@ func TestPortforward(t *testing.T) {
 		t.Skip("skipping integration tests")
 	}
 
-	portforward, err := portforward.New([]string{"127.0.0.1", "::1"}, chain, ipv4Net, ipv6Net)
+	pf, err := portforward.New([]string{"127.0.0.1", "::1"}, chain, ipv4Net, ipv6Net)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -49,7 +51,7 @@ func TestPortforward(t *testing.T) {
 	ipts := setupIptables(t)
 
 	t.Run("add rules", func(t *testing.T) {
-		portforward.UpdatePortforwarding(apiFixture)
+		pf.UpdatePortforwarding(apiFixture)
 
 		rules := getRules(t, ipts)
 		if diff := cmp.Diff(rulesFixture, rules); diff != "" {
@@ -58,7 +60,7 @@ func TestPortforward(t *testing.T) {
 	})
 
 	t.Run("remove rules", func(t *testing.T) {
-		portforward.UpdatePortforwarding(api.WireguardPeerList{})
+		pf.UpdatePortforwarding(api.WireguardPeerList{})
 
 		rules := getRules(t, ipts)
 		if diff := cmp.Diff([]string{}, rules); diff != "" {
