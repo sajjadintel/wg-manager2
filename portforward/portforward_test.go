@@ -8,6 +8,7 @@ import (
 
 	"github.com/coreos/go-iptables/iptables"
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/mullvad/wireguard-manager/api"
 	"github.com/mullvad/wireguard-manager/portforward"
 )
@@ -54,7 +55,7 @@ func TestPortforward(t *testing.T) {
 		pf.UpdatePortforwarding(apiFixture)
 
 		rules := getRules(t, ipts)
-		if diff := cmp.Diff(rulesFixture, rules); diff != "" {
+		if diff := cmp.Diff(rulesFixture, rules, cmpopts.SortSlices(stringCompare)); diff != "" {
 			t.Fatalf("unexpected rules (-want +got):\n%s", diff)
 		}
 	})
@@ -67,6 +68,10 @@ func TestPortforward(t *testing.T) {
 			t.Fatalf("unexpected rules (-want +got):\n%s", diff)
 		}
 	})
+}
+
+func stringCompare(i string, j string) bool {
+	return i < j
 }
 
 func getRules(t *testing.T, ipts []*iptables.IPTables) []string {
