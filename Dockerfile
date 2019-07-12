@@ -1,4 +1,4 @@
-FROM mullvadvpn/golang@sha256:ff860e740b0f5ea09c6d9c2b513ae6a751aecc77015dc5ea0a962b8fa981df5c
+FROM mullvadvpn/golang@sha256:5a8d2c3dba8153e415273bb07e2ca7e55da2b045420ae3f3a322edcbf477b8f9
 
 # Get NFPM
 ENV NFPM_VERSION 0.11.0
