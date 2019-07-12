@@ -14,9 +14,10 @@ import (
 
 var fixture = api.WireguardPeerList{
 	api.WireguardPeer{
-		IPLeastsig: 1,
-		Ports:      []int{1234, 4321},
-		Pubkey:     strings.Repeat("a", 44),
+		IPv4:   "10.99.0.1/32",
+		IPv6:   "fc00:bbbb:bbbb:bb01::1/128",
+		Ports:  []int{1234, 4321},
+		Pubkey: strings.Repeat("a", 44),
 	},
 }
 

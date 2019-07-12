@@ -20,14 +20,15 @@ type WireguardPeerList []WireguardPeer
 
 // WireguardPeer is a wireguard peer
 type WireguardPeer struct {
-	IPLeastsig int    `json:"ip_leastsig"`
-	Ports      []int  `json:"ports"`
-	Pubkey     string `json:"pubkey"`
+	IPv4   string `json:"ipv4"`
+	IPv6   string `json:"ipv6"`
+	Ports  []int  `json:"ports"`
+	Pubkey string `json:"pubkey"`
 }
 
 // GetWireguardPeers fetches a list of wireguard peers from the API and returns it
 func (a *API) GetWireguardPeers() (WireguardPeerList, error) {
-	req, err := http.NewRequest("GET", a.BaseURL+"/wg/active-pubkeys/", nil)
+	req, err := http.NewRequest("GET", a.BaseURL+"/wg/active-pubkeys/v2/", nil)
 	if err != nil {
 		return WireguardPeerList{}, err
 	}

@@ -18,13 +18,11 @@ import (
 type Wireguard struct {
 	client     *wgctrl.Client
 	interfaces []string
-	ipv4Net    net.IP
-	ipv6Net    net.IP
 	metrics    *statsd.Client
 }
 
 // New ensures that the interfaces given are valid, and returns a new Wireguard instance
-func New(interfaces []string, ipv4Net net.IP, ipv6Net net.IP, metrics *statsd.Client) (*Wireguard, error) {
+func New(interfaces []string, metrics *statsd.Client) (*Wireguard, error) {
 	client, err := wgctrl.New()
 	if err != nil {
 		return nil, err
@@ -40,8 +38,6 @@ func New(interfaces []string, ipv4Net net.IP, ipv6Net net.IP, metrics *statsd.Cl
 	return &Wireguard{
 		client:     client,
 		interfaces: interfaces,
-		ipv4Net:    ipv4Net,
-		ipv6Net:    ipv6Net,
 		metrics:    metrics,
 	}, nil
 }
@@ -117,12 +113,12 @@ func (w *Wireguard) mapPeers(peers api.WireguardPeerList) (peerMap map[wgtypes.K
 			continue
 		}
 
-		ipv4, err := iputil.GetIPv4(w.ipv4Net, peer.IPLeastsig)
+		_, ipv4, err := net.ParseCIDR(peer.IPv4)
 		if err != nil {
 			continue
 		}
 
-		ipv6, err := iputil.GetIPv6(w.ipv6Net, peer.IPLeastsig)
+		_, ipv6, err := net.ParseCIDR(peer.IPv6)
 		if err != nil {
 			continue
 		}

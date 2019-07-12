@@ -2,7 +2,6 @@ package portforward_test
 
 import (
 	"encoding/base64"
-	"net"
 	"strings"
 	"testing"
 
@@ -18,9 +17,10 @@ import (
 
 var apiFixture = api.WireguardPeerList{
 	api.WireguardPeer{
-		IPLeastsig: 1,
-		Ports:      []int{1234, 4321},
-		Pubkey:     base64.StdEncoding.EncodeToString([]byte(strings.Repeat("a", 32))),
+		IPv4:   "10.99.0.1/32",
+		IPv6:   "fc00:bbbb:bbbb:bb01::1/128",
+		Ports:  []int{1234, 4321},
+		Pubkey: base64.StdEncoding.EncodeToString([]byte(strings.Repeat("a", 32))),
 	},
 }
 
@@ -30,9 +30,6 @@ var rulesFixture = []string{
 	"-A PORTFORWARDING -d ::1/128 -p tcp -m multiport --dports 1234,4321 -j DNAT --to-destination fc00:bbbb:bbbb:bb01::1",
 	"-A PORTFORWARDING -d ::1/128 -p udp -m multiport --dports 1234,4321 -j DNAT --to-destination fc00:bbbb:bbbb:bb01::1",
 }
-
-var ipv4Net = net.ParseIP("10.99.0.0")
-var ipv6Net = net.ParseIP("fc00:bbbb:bbbb:bb01::")
 
 const (
 	chain = "PORTFORWARDING"
@@ -44,7 +41,7 @@ func TestPortforward(t *testing.T) {
 		t.Skip("skipping integration tests")
 	}
 
-	pf, err := portforward.New([]string{"127.0.0.1", "::1"}, chain, ipv4Net, ipv6Net)
+	pf, err := portforward.New([]string{"127.0.0.1", "::1"}, chain)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -118,7 +115,7 @@ func TestInvalidInterface(t *testing.T) {
 	}
 
 	interfaceName := "nonexistant"
-	_, err := portforward.New([]string{}, interfaceName, ipv4Net, ipv6Net)
+	_, err := portforward.New([]string{}, interfaceName)
 	if err == nil {
 		t.Fatal("no error")
 	}
@@ -126,7 +123,7 @@ func TestInvalidInterface(t *testing.T) {
 
 func TestInvalidIPs(t *testing.T) {
 	interfaceName := "nonexistant"
-	_, err := portforward.New([]string{"abcd"}, interfaceName, ipv4Net, ipv6Net)
+	_, err := portforward.New([]string{"abcd"}, interfaceName)
 	if err == nil {
 		t.Fatal("no error")
 	}
