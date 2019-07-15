@@ -6,7 +6,6 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -38,8 +37,6 @@ func main() {
 	username := flag.String("username", "", "api username")
 	password := flag.String("password", "", "api password")
 	interfaces := flag.String("interfaces", "wg0", "wireguard interfaces to configure. Pass a comma delimited list to configure multiple interfaces, eg 'wg0,wg1,wg2'")
-	ipv4Net := flag.String("ipv4_net", "10.99.0.0/16", "ipv4 net to use for peer ip addresses")
-	ipv6Net := flag.String("ipv6_net", "fc00:bbbb:bbbb:bb01::/64", "ipv4 net to use for peer ip addresses")
 	portForwardingChain := flag.String("portforwarding-chain", "PORTFORWARDING", "iptables chain to use for portforwarding")
 	portForwardingExitAddresses := flag.String("portforwarding-exit-addresses", "", "exit addresses to use for portforwarding. Pass a comma delimited list to configure multiple IPs, eg '127.0.0.1,127.0.0.2'")
 	statsdAddress := flag.String("statsd-address", "127.0.0.1:8125", "statsd address to send metrics to")
@@ -60,17 +57,8 @@ func main() {
 
 	log.Printf("starting wireguard-manager %s", appVersion)
 
-	ipv4, _, err := net.ParseCIDR(*ipv4Net)
-	if err != nil {
-		log.Fatalf("invalid ipv4 net %s", err)
-	}
-
-	ipv6, _, err := net.ParseCIDR(*ipv6Net)
-	if err != nil {
-		log.Fatalf("invalid ipv6 net %s", err)
-	}
-
 	// Initialize metrics
+	var err error
 	metrics, err = statsd.New(statsd.TagsFormat(statsd.Datadog), statsd.Prefix("wireguard"), statsd.Address(*statsdAddress))
 	if err != nil {
 		log.Fatalf("Error initializing metrics %s", err)
@@ -94,7 +82,7 @@ func main() {
 
 	interfacesList := strings.Split(*interfaces, ",")
 
-	wg, err = wireguard.New(interfacesList, ipv4, ipv6, metrics)
+	wg, err = wireguard.New(interfacesList, metrics)
 	if err != nil {
 		log.Fatalf("error initializing wireguard %s", err)
 	}
@@ -107,7 +95,7 @@ func main() {
 
 	addressesList := strings.Split(*portForwardingExitAddresses, ",")
 
-	pf, err = portforward.New(addressesList, *portForwardingChain, ipv4, ipv6)
+	pf, err = portforward.New(addressesList, *portForwardingChain)
 	if err != nil {
 		log.Fatalf("error initializing portforwarding %s", err)
 	}

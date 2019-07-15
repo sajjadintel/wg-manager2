@@ -24,9 +24,10 @@ var ipv6Net = net.ParseIP("fc00:bbbb:bbbb:bb01::")
 
 var apiFixture = api.WireguardPeerList{
 	api.WireguardPeer{
-		IPLeastsig: 1,
-		Ports:      []int{1234, 4321},
-		Pubkey:     base64.StdEncoding.EncodeToString([]byte(strings.Repeat("a", 32))),
+		IPv4:   "10.99.0.1/32",
+		IPv6:   "fc00:bbbb:bbbb:bb01::1/128",
+		Ports:  []int{1234, 4321},
+		Pubkey: base64.StdEncoding.EncodeToString([]byte(strings.Repeat("a", 32))),
 	},
 }
 
@@ -68,7 +69,7 @@ func TestWireguard(t *testing.T) {
 	defer client.Close()
 	defer resetDevice(t, client)
 
-	wg, err := wireguard.New([]string{testInterface}, ipv4Net, ipv6Net, metrics)
+	wg, err := wireguard.New([]string{testInterface}, metrics)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -88,7 +89,8 @@ func TestWireguard(t *testing.T) {
 	})
 
 	t.Run("update peer ip", func(t *testing.T) {
-		apiFixture[0].IPLeastsig = 2
+		apiFixture[0].IPv4 = "10.99.0.2/32"
+		apiFixture[0].IPv6 = "fc00:bbbb:bbbb:bb01::2/128"
 		wg.UpdatePeers(apiFixture)
 
 		device, err := client.Device(testInterface)
@@ -137,7 +139,7 @@ func TestInvalidInterface(t *testing.T) {
 
 	interfaceName := "nonexistant"
 
-	_, err := wireguard.New([]string{interfaceName}, net.ParseIP("127.0.0.1"), net.ParseIP("::1"), nil)
+	_, err := wireguard.New([]string{interfaceName}, nil)
 	if err == nil {
 		t.Fatal("no error")
 	}
