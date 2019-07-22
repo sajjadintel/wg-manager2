@@ -7,20 +7,23 @@ go:
 env:
 - GO111MODULE=on
 script:
-  - make
   # Install wireguard
   - sudo apt-get -y install software-properties-common
   - sudo add-apt-repository -y ppa:wireguard/wireguard
   - sudo apt-get -y update
-  - sudo apt-get -y install linux-headers-$(uname -r) wireguard-dkms
+  - sudo apt-get -y install linux-headers-$(uname -r) wireguard-dkms libipset-dev ipset
   - sudo ip link add wg0 type wireguard
   - sudo ip link set up wg0
+  # Build the project and run the tests
+  - make
   # Set up iptables
   - sudo iptables -t nat -N PORTFORWARDING
   - sudo ip6tables -t nat -N PORTFORWARDING
-  # Build tests
+  - sudo ipset create PORTFORWARDING_IPV4 hash:ip
+  - sudo ipset create PORTFORWARDING_IPV6 hash:ip family inet6
+  # Build the integration tests
   - go test -c ./portforward && go test -c ./wireguard
-  # Run tests
+  # Run integration tests
   - sudo ./portforward.test -test.v && sudo ./wireguard.test -test.v
 
 notifications:

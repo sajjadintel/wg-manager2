@@ -3,6 +3,7 @@ module github.com/mullvad/wireguard-manager
 require (
 	github.com/DMarby/jitter v0.0.0-20190312004500-d77fd504dcfa
 	github.com/coreos/go-iptables v0.4.1
+	github.com/digineo/go-ipset v0.0.0-20190107210044-aafb931aa086
 	github.com/google/go-cmp v0.3.0
 	github.com/infosum/statsd v2.1.2+incompatible
 	github.com/jamiealquiza/envy v1.1.0

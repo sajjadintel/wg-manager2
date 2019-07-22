@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/coreos/go-iptables/iptables"
+	"github.com/digineo/go-ipset"
 	"github.com/mullvad/wireguard-manager/api"
 )
 
@@ -16,24 +17,15 @@ type Portforward struct {
 	iptables  *iptables.IPTables
 	ip6tables *iptables.IPTables
 	chain     string
-	ips       []net.IP
+	ipsetIPv4 string
+	ipsetIPv6 string
 }
 
 // Iptables table to operate against
 const table = "nat"
 
 // New validates the addresses, ensures that the iptables portforwarding chain exists, and returns a new Portforward instance
-func New(addresses []string, chain string) (*Portforward, error) {
-	var ips []net.IP
-	for _, address := range addresses {
-		ip := net.ParseIP(address)
-		if ip == nil {
-			return nil, fmt.Errorf("%s is not a valid ip", address)
-		}
-
-		ips = append(ips, ip)
-	}
-
+func New(chain string, ipsetTableIPv4 string, ipsetTableIPv6 string) (*Portforward, error) {
 	ipt, err := newIPTables(chain, iptables.ProtocolIPv4)
 	if err != nil {
 		return nil, err
@@ -44,11 +36,22 @@ func New(addresses []string, chain string) (*Portforward, error) {
 		return nil, err
 	}
 
+	_, err = ipset.List(ipsetTableIPv4)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = ipset.List(ipsetTableIPv6)
+	if err != nil {
+		return nil, err
+	}
+
 	return &Portforward{
 		iptables:  ipt,
 		ip6tables: ip6t,
 		chain:     chain,
-		ips:       ips,
+		ipsetIPv4: ipsetTableIPv4,
+		ipsetIPv6: ipsetTableIPv6,
 	}, nil
 }
 
@@ -95,29 +98,25 @@ func (p *Portforward) UpdatePortforwarding(peers api.WireguardPeerList) {
 		}
 
 		// Ignore ip's with errors, in-case we get bad data from the API
-		for _, ip := range p.ips {
-			if ip.To4() != nil {
-				ipv4, _, err := net.ParseCIDR(peer.IPv4)
-				if err != nil {
-					continue
-				}
-
-				tcpRule := fmt.Sprintf("-d %s -p tcp -m multiport --dports %s -j DNAT --to-destination %s", ip.String(), getPortsString(peer.Ports), ipv4)
-				udpRule := fmt.Sprintf("-d %s -p udp -m multiport --dports %s -j DNAT --to-destination %s", ip.String(), getPortsString(peer.Ports), ipv4)
-				rules[tcpRule] = iptables.ProtocolIPv4
-				rules[udpRule] = iptables.ProtocolIPv4
-			} else {
-				ipv6, _, err := net.ParseCIDR(peer.IPv6)
-				if err != nil {
-					continue
-				}
-
-				tcpRule := fmt.Sprintf("-d %s -p tcp -m multiport --dports %s -j DNAT --to-destination %s", ip.String(), getPortsString(peer.Ports), ipv6)
-				udpRule := fmt.Sprintf("-d %s -p udp -m multiport --dports %s -j DNAT --to-destination %s", ip.String(), getPortsString(peer.Ports), ipv6)
-				rules[tcpRule] = iptables.ProtocolIPv6
-				rules[udpRule] = iptables.ProtocolIPv6
-			}
+		ipv4, _, err := net.ParseCIDR(peer.IPv4)
+		if err != nil {
+			continue
 		}
+
+		tcpRule := fmt.Sprintf("-p tcp -m set --match-set %s dst -m multiport --dports %s -j DNAT --to-destination %s", p.ipsetIPv4, getPortsString(peer.Ports), ipv4)
+		udpRule := fmt.Sprintf("-p udp -m set --match-set %s dst -m multiport --dports %s -j DNAT --to-destination %s", p.ipsetIPv4, getPortsString(peer.Ports), ipv4)
+		rules[tcpRule] = iptables.ProtocolIPv4
+		rules[udpRule] = iptables.ProtocolIPv4
+
+		ipv6, _, err := net.ParseCIDR(peer.IPv6)
+		if err != nil {
+			continue
+		}
+
+		tcpRule = fmt.Sprintf("-p tcp -m set --match-set %s dst -m multiport --dports %s -j DNAT --to-destination %s", p.ipsetIPv6, getPortsString(peer.Ports), ipv6)
+		udpRule = fmt.Sprintf("-p udp -m set --match-set %s dst -m multiport --dports %s -j DNAT --to-destination %s", p.ipsetIPv6, getPortsString(peer.Ports), ipv6)
+		rules[tcpRule] = iptables.ProtocolIPv6
+		rules[udpRule] = iptables.ProtocolIPv6
 	}
 
 	currentRules, err := p.getCurrentRules()

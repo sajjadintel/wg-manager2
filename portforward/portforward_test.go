@@ -25,15 +25,17 @@ var apiFixture = api.WireguardPeerList{
 }
 
 var rulesFixture = []string{
-	"-A PORTFORWARDING -d 127.0.0.1/32 -p tcp -m multiport --dports 1234,4321 -j DNAT --to-destination 10.99.0.1",
-	"-A PORTFORWARDING -d 127.0.0.1/32 -p udp -m multiport --dports 1234,4321 -j DNAT --to-destination 10.99.0.1",
-	"-A PORTFORWARDING -d ::1/128 -p tcp -m multiport --dports 1234,4321 -j DNAT --to-destination fc00:bbbb:bbbb:bb01::1",
-	"-A PORTFORWARDING -d ::1/128 -p udp -m multiport --dports 1234,4321 -j DNAT --to-destination fc00:bbbb:bbbb:bb01::1",
+	"-A PORTFORWARDING -p tcp -m set --match-set PORTFORWARDING_IPV4 dst -m multiport --dports 1234,4321 -j DNAT --to-destination 10.99.0.1",
+	"-A PORTFORWARDING -p udp -m set --match-set PORTFORWARDING_IPV4 dst -m multiport --dports 1234,4321 -j DNAT --to-destination 10.99.0.1",
+	"-A PORTFORWARDING -p tcp -m set --match-set PORTFORWARDING_IPV6 dst -m multiport --dports 1234,4321 -j DNAT --to-destination fc00:bbbb:bbbb:bb01::1",
+	"-A PORTFORWARDING -p udp -m set --match-set PORTFORWARDING_IPV6 dst -m multiport --dports 1234,4321 -j DNAT --to-destination fc00:bbbb:bbbb:bb01::1",
 }
 
 const (
-	chain = "PORTFORWARDING"
-	table = "nat"
+	chain     = "PORTFORWARDING"
+	ipsetIPv4 = "PORTFORWARDING_IPV4"
+	ipsetIPv6 = "PORTFORWARDING_IPV6"
+	table     = "nat"
 )
 
 func TestPortforward(t *testing.T) {
@@ -41,7 +43,7 @@ func TestPortforward(t *testing.T) {
 		t.Skip("skipping integration tests")
 	}
 
-	pf, err := portforward.New([]string{"127.0.0.1", "::1"}, chain)
+	pf, err := portforward.New(chain, ipsetIPv4, ipsetIPv6)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -109,21 +111,19 @@ func setupIptables(t *testing.T) []*iptables.IPTables {
 	return []*iptables.IPTables{ip4t, ip6t}
 }
 
-func TestInvalidInterface(t *testing.T) {
+func TestInvalidChain(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping integration tests")
 	}
 
-	interfaceName := "nonexistant"
-	_, err := portforward.New([]string{}, interfaceName)
+	_, err := portforward.New("nonexistant", ipsetIPv4, ipsetIPv6)
 	if err == nil {
 		t.Fatal("no error")
 	}
 }
 
-func TestInvalidIPs(t *testing.T) {
-	interfaceName := "nonexistant"
-	_, err := portforward.New([]string{"abcd"}, interfaceName)
+func TestInvalidIPSet(t *testing.T) {
+	_, err := portforward.New(chain, "nonexistant", "nonexistant")
 	if err == nil {
 		t.Fatal("no error")
 	}
