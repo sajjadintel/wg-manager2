@@ -59,13 +59,14 @@ func (w *Wireguard) UpdatePeers(peers api.WireguardPeerList) {
 
 		existingPeerMap := mapExistingPeers(device.Peers)
 		cfgPeers := []wgtypes.PeerConfig{}
+		resetPeers := []wgtypes.PeerConfig{}
 
 		// Loop through peers from the API
-		// Add ones not currently existing in the wireguard config
-		// Update ones that exist in the wireguard config but has changed
+		// Add peers not currently existing in the wireguard config
+		// Update peers that exist in the wireguard config but has changed
 		for key, allowedIPs := range peerMap {
-			existingAllowedIPs, ok := existingPeerMap[key]
-			if !ok || !iputil.EqualIPNet(allowedIPs, existingAllowedIPs) {
+			existingPeer, ok := existingPeerMap[key]
+			if !ok || !iputil.EqualIPNet(allowedIPs, existingPeer.AllowedIPs) {
 				cfgPeers = append(cfgPeers, wgtypes.PeerConfig{
 					PublicKey:         key,
 					ReplaceAllowedIPs: true,
@@ -74,13 +75,35 @@ func (w *Wireguard) UpdatePeers(peers api.WireguardPeerList) {
 			}
 		}
 
-		// Loop through the current peers in the wireguard config and remove ones that doesn't exist in the API
-		for key := range existingPeerMap {
+		// Loop through the current peers in the wireguard config
+		for key, peer := range existingPeerMap {
 			if _, ok := peerMap[key]; !ok {
+				// Remove peers that doesn't exist in the API
 				cfgPeers = append(cfgPeers, wgtypes.PeerConfig{
 					PublicKey: key,
 					Remove:    true,
 				})
+			} else if needsReset(peer) {
+				// Remove peers that's previously been active and should be reset to remove data
+				cfgPeers = append(cfgPeers, wgtypes.PeerConfig{
+					PublicKey: key,
+					Remove:    true,
+				})
+
+				peerCfg := wgtypes.PeerConfig{
+					PublicKey:         key,
+					ReplaceAllowedIPs: true,
+					AllowedIPs:        peer.AllowedIPs,
+				}
+
+				// Copy the preshared key if one is set
+				var emptyKey wgtypes.Key
+				if peer.PresharedKey != emptyKey {
+					peerCfg.PresharedKey = &peer.PresharedKey
+				}
+
+				// Re-add the peer later
+				resetPeers = append(resetPeers, peerCfg)
 			}
 		}
 
@@ -89,11 +112,28 @@ func (w *Wireguard) UpdatePeers(peers api.WireguardPeerList) {
 			continue
 		}
 
+		// Add new peers, remove deleted peers, and remove peers should be reset
 		err = w.client.ConfigureDevice(d, wgtypes.Config{
 			Peers: cfgPeers,
 		})
+
 		if err != nil {
-			log.Printf("error configuring to wireguard interface %s: %s", d, err.Error())
+			log.Printf("error configuring wireguard interface %s: %s", d, err.Error())
+			continue
+		}
+
+		// No peers to re-add for reset
+		if len(resetPeers) == 0 {
+			continue
+		}
+
+		// Re-add the peers we removed to reset in the previous step
+		err = w.client.ConfigureDevice(d, wgtypes.Config{
+			Peers: resetPeers,
+		})
+
+		if err != nil {
+			log.Printf("error configuring wireguard interface %s: %s", d, err.Error())
 			continue
 		}
 	}
@@ -133,11 +173,11 @@ func (w *Wireguard) mapPeers(peers api.WireguardPeerList) (peerMap map[wgtypes.K
 }
 
 // Take the existing wireguard peers and convert them into a map for easier comparison
-func mapExistingPeers(peers []wgtypes.Peer) (peerMap map[wgtypes.Key][]net.IPNet) {
-	peerMap = make(map[wgtypes.Key][]net.IPNet)
+func mapExistingPeers(peers []wgtypes.Peer) (peerMap map[wgtypes.Key]wgtypes.Peer) {
+	peerMap = make(map[wgtypes.Key]wgtypes.Peer)
 
 	for _, peer := range peers {
-		peerMap[peer.PublicKey] = peer.AllowedIPs
+		peerMap[peer.PublicKey] = peer
 	}
 
 	return
@@ -156,6 +196,18 @@ func countConnectedPeers(peers []wgtypes.Peer) (connectedPeers int) {
 	}
 
 	return
+}
+
+// A wireguard session can't last for longer then 3 minutes
+const inactivityTime = time.Minute * 3
+
+// Whether a peer should be reset or not, to zero out last handshake/bandwidth information
+func needsReset(peer wgtypes.Peer) bool {
+	if !peer.LastHandshakeTime.IsZero() && time.Since(peer.LastHandshakeTime) > handshakeInterval {
+		return true
+	}
+
+	return false
 }
 
 // Close closes the underlying wireguard client
