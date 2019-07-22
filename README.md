@@ -26,6 +26,10 @@ Then you can run the tests as described above.
 All options can be either configured via command line flags, or via their respective environment variable, as denoted by `[ENVIRONMENT_VARIABLE]`.
 To get a list of all the options, run `wireguard-manager -h`.
 
+When installed via the `.deb` package, a user named `wireguard-manager` will be created for the service to run as, as well as a systemd service named `wireguard-manager.service`.
+Configuration is done by creating a file at `/etc/default/wireguard-manager` and defining the environment variables there.
+All logs are sent to stdout/stderr, so in order to debug issues with the service, simply use `journalctl` or `systemctl status`.
+
 ## Packaging
 In order to deploy wireguard-manager, we build `.deb` packages. We use docker to make this process easier, so make sure you have that installed and running.
 To create a new package, first create a new tag in git, this will be used for the package version:
