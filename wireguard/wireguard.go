@@ -203,7 +203,7 @@ const inactivityTime = time.Minute * 3
 
 // Whether a peer should be reset or not, to zero out last handshake/bandwidth information
 func needsReset(peer wgtypes.Peer) bool {
-	if !peer.LastHandshakeTime.IsZero() && time.Since(peer.LastHandshakeTime) > handshakeInterval {
+	if !peer.LastHandshakeTime.IsZero() && time.Since(peer.LastHandshakeTime) > inactivityTime {
 		return true
 	}
 
