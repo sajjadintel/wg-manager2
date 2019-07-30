@@ -19,7 +19,7 @@ var apiFixture = api.WireguardPeerList{
 	api.WireguardPeer{
 		IPv4:   "10.99.0.1/32",
 		IPv6:   "fc00:bbbb:bbbb:bb01::1/128",
-		Ports:  []int{1234, 4321},
+		Ports:  []int{4321, 1234},
 		Pubkey: base64.StdEncoding.EncodeToString([]byte(strings.Repeat("a", 32))),
 	},
 }

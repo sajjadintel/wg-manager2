@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -159,6 +160,8 @@ func (p *Portforward) UpdatePortforwarding(peers api.WireguardPeerList) {
 }
 
 func getPortsString(ports []int) string {
+	sort.Ints(ports)
+
 	slice := make([]string, len(ports))
 	for i, v := range ports {
 		slice[i] = strconv.Itoa(v)
