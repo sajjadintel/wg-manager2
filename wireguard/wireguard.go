@@ -99,7 +99,10 @@ func (w *Wireguard) UpdatePeers(peers api.WireguardPeerList) {
 				// Copy the preshared key if one is set
 				var emptyKey wgtypes.Key
 				if peer.PresharedKey != emptyKey {
-					peerCfg.PresharedKey = &peer.PresharedKey
+					// We need to copy the key, or the pointer gets corrupted for some reason
+					var copiedKey wgtypes.Key
+					copy(copiedKey[:], peer.PresharedKey[:])
+					peerCfg.PresharedKey = &copiedKey
 				}
 
 				// Re-add the peer later
