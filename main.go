@@ -124,15 +124,24 @@ func main() {
 }
 
 func synchronize() {
+	defer metrics.NewTiming().Send("synchronize_time")
+
+	t := metrics.NewTiming()
 	peers, err := a.GetWireguardPeers()
 	if err != nil {
 		metrics.Increment("error_getting_peers")
 		log.Printf("error getting peers %s", err.Error())
 		return
 	}
+	t.Send("get_wireguard_peers_time")
 
+	t = metrics.NewTiming()
 	wg.UpdatePeers(peers)
+	t.Send("update_peers_time")
+
+	t = metrics.NewTiming()
 	pf.UpdatePortforwarding(peers)
+	t.Send("update_portforwarding_time")
 }
 
 func waitForInterrupt(ctx context.Context) error {
