@@ -9,8 +9,10 @@ import (
 	"strings"
 
 	"github.com/coreos/go-iptables/iptables"
-	"github.com/digineo/go-ipset"
+	"github.com/digineo/go-ipset/v2"
+	"github.com/mdlayher/netlink"
 	"github.com/mullvad/wireguard-manager/api"
+	"github.com/ti-mo/netfilter"
 )
 
 // Portforward is a utility for managing portforwarding
@@ -37,12 +39,12 @@ func New(chain string, ipsetTableIPv4 string, ipsetTableIPv6 string) (*Portforwa
 		return nil, err
 	}
 
-	_, err = ipset.List(ipsetTableIPv4)
+	err = validateIPSet(ipsetTableIPv4)
 	if err != nil {
 		return nil, err
 	}
 
-	_, err = ipset.List(ipsetTableIPv6)
+	err = validateIPSet(ipsetTableIPv6)
 	if err != nil {
 		return nil, err
 	}
@@ -88,6 +90,23 @@ func chainExists(chain string, ipt *iptables.IPTables) (bool, error) {
 	}
 
 	return false, nil
+}
+
+func validateIPSet(name string) error {
+	conn, err := ipset.Dial(netfilter.ProtoUnspec, &netlink.Config{})
+	if err != nil {
+		return err
+	}
+
+	ipsets, err := conn.ListAll()
+
+	for _, p := range ipsets {
+		if p.Name.Get() == name {
+			return nil
+		}
+	}
+
+	return fmt.Errorf("an ipset named %s does not exist", name)
 }
 
 // UpdatePortforwarding updates the iptables rules for portforwarding to match the given list of peers
