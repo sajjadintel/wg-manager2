@@ -1,5 +1,7 @@
 module github.com/mullvad/wireguard-manager
 
+go 1.13
+
 require (
 	github.com/DMarby/jitter v0.0.0-20190312004500-d77fd504dcfa
 	github.com/Microsoft/go-winio v0.4.14 // indirect
