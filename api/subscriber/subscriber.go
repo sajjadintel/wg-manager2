@@ -87,7 +87,8 @@ func (s *Subscriber) reconnect(ctx context.Context, channel chan<- WireguardEven
 	// Attempt to create a new connection
 	err := s.connect(ctx, channel)
 	if err != nil {
-		log.Println("error reconnecting to websocket", err)
 		go s.reconnect(ctx, channel)
+	} else {
+		log.Println("successfully reconnected to websocket")
 	}
 }
