@@ -117,26 +117,7 @@ func (p *Portforward) UpdatePortforwarding(peers api.WireguardPeerList) {
 			continue
 		}
 
-		// Ignore ip's with errors, in-case we get bad data from the API
-		ipv4, _, err := net.ParseCIDR(peer.IPv4)
-		if err != nil {
-			continue
-		}
-
-		tcpRule := fmt.Sprintf("-p tcp -m set --match-set %s dst -m multiport --dports %s -j DNAT --to-destination %s", p.ipsetIPv4, getPortsString(peer.Ports), ipv4)
-		udpRule := fmt.Sprintf("-p udp -m set --match-set %s dst -m multiport --dports %s -j DNAT --to-destination %s", p.ipsetIPv4, getPortsString(peer.Ports), ipv4)
-		rules[tcpRule] = iptables.ProtocolIPv4
-		rules[udpRule] = iptables.ProtocolIPv4
-
-		ipv6, _, err := net.ParseCIDR(peer.IPv6)
-		if err != nil {
-			continue
-		}
-
-		tcpRule = fmt.Sprintf("-p tcp -m set --match-set %s dst -m multiport --dports %s -j DNAT --to-destination %s", p.ipsetIPv6, getPortsString(peer.Ports), ipv6)
-		udpRule = fmt.Sprintf("-p udp -m set --match-set %s dst -m multiport --dports %s -j DNAT --to-destination %s", p.ipsetIPv6, getPortsString(peer.Ports), ipv6)
-		rules[tcpRule] = iptables.ProtocolIPv6
-		rules[udpRule] = iptables.ProtocolIPv6
+		p.createPeerRules(peer, rules)
 	}
 
 	currentRules, err := p.getCurrentRules()
@@ -176,6 +157,79 @@ func (p *Portforward) UpdatePortforwarding(peers api.WireguardPeerList) {
 			}
 		}
 	}
+}
+
+// AddPortforwarding tries to add portforwarding rules for a peer without checking existing ones
+func (p *Portforward) AddPortforwarding(peer api.WireguardPeer) {
+	if len(peer.Ports) < 1 {
+		return
+	}
+
+	rules := make(map[string]iptables.Protocol)
+	p.createPeerRules(peer, rules)
+
+	// Add new portforwarding rules
+	for rule, protocol := range rules {
+		ipt := p.iptables
+		if protocol == iptables.ProtocolIPv6 {
+			ipt = p.ip6tables
+		}
+
+		err := ipt.Append(table, p.chain, strings.Split(rule, " ")...)
+		if err != nil {
+			log.Printf("error adding iptables rule")
+			continue
+		}
+	}
+
+	return
+}
+
+// RemovePortforwarding tries to remove portforwarding rules for a peer without checking existing ones
+func (p *Portforward) RemovePortforwarding(peer api.WireguardPeer) {
+	if len(peer.Ports) < 1 {
+		return
+	}
+
+	rules := make(map[string]iptables.Protocol)
+	p.createPeerRules(peer, rules)
+
+	// Remove old portforwarding rules
+	for rule, protocol := range rules {
+		ipt := p.iptables
+		if protocol == iptables.ProtocolIPv6 {
+			ipt = p.ip6tables
+		}
+
+		err := ipt.Delete(table, p.chain, strings.Split(rule, " ")...)
+		if err != nil {
+			log.Printf("error deleting iptables rule")
+			continue
+		}
+	}
+}
+
+func (p *Portforward) createPeerRules(peer api.WireguardPeer, rules map[string]iptables.Protocol) {
+	// Ignore ip's with errors, in-case we get bad data from the API
+	ipv4, _, err := net.ParseCIDR(peer.IPv4)
+	if err != nil {
+		return
+	}
+
+	tcpRule := fmt.Sprintf("-p tcp -m set --match-set %s dst -m multiport --dports %s -j DNAT --to-destination %s", p.ipsetIPv4, getPortsString(peer.Ports), ipv4)
+	udpRule := fmt.Sprintf("-p udp -m set --match-set %s dst -m multiport --dports %s -j DNAT --to-destination %s", p.ipsetIPv4, getPortsString(peer.Ports), ipv4)
+	rules[tcpRule] = iptables.ProtocolIPv4
+	rules[udpRule] = iptables.ProtocolIPv4
+
+	ipv6, _, err := net.ParseCIDR(peer.IPv6)
+	if err != nil {
+		return
+	}
+
+	tcpRule = fmt.Sprintf("-p tcp -m set --match-set %s dst -m multiport --dports %s -j DNAT --to-destination %s", p.ipsetIPv6, getPortsString(peer.Ports), ipv6)
+	udpRule = fmt.Sprintf("-p udp -m set --match-set %s dst -m multiport --dports %s -j DNAT --to-destination %s", p.ipsetIPv6, getPortsString(peer.Ports), ipv6)
+	rules[tcpRule] = iptables.ProtocolIPv6
+	rules[udpRule] = iptables.ProtocolIPv6
 }
 
 func getPortsString(ports []int) string {

@@ -17,6 +17,7 @@ import (
 	"github.com/infosum/statsd"
 	"github.com/jamiealquiza/envy"
 	"github.com/mullvad/wireguard-manager/api"
+	"github.com/mullvad/wireguard-manager/api/subscriber"
 	"github.com/mullvad/wireguard-manager/portforward"
 	"github.com/mullvad/wireguard-manager/wireguard"
 )
@@ -41,6 +42,10 @@ func main() {
 	portForwardingIpsetIPv4 := flag.String("portforwarding-ipset-ipv4", "PORTFORWARDING_IPV4", "ipset table to use for portforwarding for ipv4 addresses.")
 	portForwardingIpsetIPv6 := flag.String("portforwarding-ipset-ipv6", "PORTFORWARDING_IPV6", "ipset table to use for portforwarding for ipv6 addresses.")
 	statsdAddress := flag.String("statsd-address", "127.0.0.1:8125", "statsd address to send metrics to")
+	mqURL := flag.String("mq-url", "wss://api.mullvad.net/mq", "message-queue url")
+	mqUsername := flag.String("mq-username", "", "message-queue username")
+	mqPassword := flag.String("mq-password", "", "message-queue password")
+	mqChannel := flag.String("mq-channel", "wireguard", "message-queue channel")
 
 	// Parse environment variables
 	envy.Parse("WG")
@@ -102,11 +107,28 @@ func main() {
 	// Run an initial synchronization
 	synchronize()
 
+	// Set up a connection to receive add/remove events
+	s := subscriber.Subscriber{
+		Username: *mqUsername,
+		Password: *mqPassword,
+		BaseURL:  *mqURL,
+		Channel:  *mqChannel,
+	}
+	eventChannel := make(chan subscriber.WireguardEvent)
+	defer close(eventChannel)
+
+	err = s.Subscribe(shutdownCtx, eventChannel)
+	if err != nil {
+		log.Fatal("error connecting to message-queue", err)
+	}
+
 	// Create a ticker to run our logic for polling the api and updating wireguard peers
 	ticker := jitter.NewTicker(*interval, *delay)
 	go func() {
 		for {
 			select {
+			case msg := <-eventChannel:
+				handleEvent(msg)
 			case <-ticker.C:
 				// We run this synchronously, the ticker will drop ticks if this takes too long
 				// This way we don't need a mutex or similar to ensure it doesn't run concurrently either
@@ -121,6 +143,18 @@ func main() {
 	// Wait for shutdown or error
 	err = waitForInterrupt(shutdownCtx)
 	log.Printf("shutting down: %s", err)
+}
+
+func handleEvent(event subscriber.WireguardEvent) {
+	switch event.Action {
+	case "ADD":
+		wg.AddPeer(event.Peer)
+		pf.AddPortforwarding(event.Peer)
+	case "REMOVE":
+		wg.RemovePeer(event.Peer)
+		pf.RemovePortforwarding(event.Peer)
+	default: // Bad data from the API, ignore it
+	}
 }
 
 func synchronize() {

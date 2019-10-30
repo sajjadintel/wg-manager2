@@ -14,4 +14,4 @@ install:
 	go install ./...
 
 package:
-	docker run --rm -v $(PWD):/repo -v $(PWD)/build:/build mullvadvpn/go-packager@sha256:a54c9376a54d5b1a38710a11f86fc3a093272efffb64506b337b6f5d5b265d4d
+	docker run --rm -v $(PWD):/repo -v $(PWD)/build:/build mullvadvpn/go-packager@sha256:5ad286057e8143df673c6a01df89939822c93f3871c23cd85188a38af4e07d21

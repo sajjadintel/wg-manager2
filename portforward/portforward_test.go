@@ -67,6 +67,24 @@ func TestPortforward(t *testing.T) {
 			t.Fatalf("unexpected rules (-want +got):\n%s", diff)
 		}
 	})
+
+	t.Run("add rules for single peer", func(t *testing.T) {
+		pf.AddPortforwarding(apiFixture[0])
+
+		rules := getRules(t, ipts)
+		if diff := cmp.Diff(rulesFixture, rules, cmpopts.SortSlices(stringCompare)); diff != "" {
+			t.Fatalf("unexpected rules (-want +got):\n%s", diff)
+		}
+	})
+
+	t.Run("remove rules for single peer", func(t *testing.T) {
+		pf.RemovePortforwarding(apiFixture[0])
+
+		rules := getRules(t, ipts)
+		if diff := cmp.Diff([]string{}, rules); diff != "" {
+			t.Fatalf("unexpected rules (-want +got):\n%s", diff)
+		}
+	})
 }
 
 func stringCompare(i string, j string) bool {

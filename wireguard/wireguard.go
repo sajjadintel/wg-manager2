@@ -151,17 +151,7 @@ func (w *Wireguard) mapPeers(peers api.WireguardPeerList) (peerMap map[wgtypes.K
 
 	// Ignore peers with errors, in-case we get bad data from the API
 	for _, peer := range peers {
-		key, err := wgtypes.ParseKey(peer.Pubkey)
-		if err != nil {
-			continue
-		}
-
-		_, ipv4, err := net.ParseCIDR(peer.IPv4)
-		if err != nil {
-			continue
-		}
-
-		_, ipv6, err := net.ParseCIDR(peer.IPv6)
+		key, ipv4, ipv6, err := parsePeer(peer)
 		if err != nil {
 			continue
 		}
@@ -211,6 +201,79 @@ func needsReset(peer wgtypes.Peer) bool {
 	}
 
 	return false
+}
+
+// AddPeer adds the given peer to the wireguard interfaces, without checking the existing configuration
+func (w *Wireguard) AddPeer(peer api.WireguardPeer) {
+	key, ipv4, ipv6, err := parsePeer(peer)
+	if err != nil {
+		return
+	}
+
+	for _, d := range w.interfaces {
+		// Add the peer
+		err := w.client.ConfigureDevice(d, wgtypes.Config{
+			Peers: []wgtypes.PeerConfig{
+				wgtypes.PeerConfig{
+					PublicKey:         key,
+					ReplaceAllowedIPs: true,
+					AllowedIPs: []net.IPNet{
+						*ipv4,
+						*ipv6,
+					},
+				},
+			},
+		})
+
+		if err != nil {
+			log.Printf("error configuring wireguard interface %s: %s", d, err.Error())
+			continue
+		}
+	}
+}
+
+// RemovePeer removes the given peer from the wireguard interfaces, without checking the existing configuration
+func (w *Wireguard) RemovePeer(peer api.WireguardPeer) {
+	key, _, _, err := parsePeer(peer)
+	if err != nil {
+		return
+	}
+
+	for _, d := range w.interfaces {
+		// Remove the peer
+		err := w.client.ConfigureDevice(d, wgtypes.Config{
+			Peers: []wgtypes.PeerConfig{
+				wgtypes.PeerConfig{
+					PublicKey: key,
+					Remove:    true,
+				},
+			},
+		})
+
+		if err != nil {
+			log.Printf("error configuring wireguard interface %s: %s", d, err.Error())
+			continue
+		}
+	}
+}
+
+func parsePeer(peer api.WireguardPeer) (key wgtypes.Key, ipv4 *net.IPNet, ipv6 *net.IPNet, err error) {
+	key, err = wgtypes.ParseKey(peer.Pubkey)
+	if err != nil {
+		return
+	}
+
+	_, ipv4, err = net.ParseCIDR(peer.IPv4)
+	if err != nil {
+		return
+	}
+
+	_, ipv6, err = net.ParseCIDR(peer.IPv6)
+	if err != nil {
+		return
+	}
+
+	return
 }
 
 // Close closes the underlying wireguard client

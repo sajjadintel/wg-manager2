@@ -118,6 +118,32 @@ func TestWireguard(t *testing.T) {
 			t.Fatalf("unexpected peers (-want +got):\n%s", diff)
 		}
 	})
+
+	t.Run("add single peer", func(t *testing.T) {
+		wg.AddPeer(apiFixture[0])
+
+		device, err := client.Device(testInterface)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if diff := cmp.Diff(peerFixture, device.Peers); diff != "" {
+			t.Fatalf("unexpected peers (-want +got):\n%s", diff)
+		}
+	})
+
+	t.Run("remove single peer", func(t *testing.T) {
+		wg.RemovePeer(apiFixture[0])
+
+		device, err := client.Device(testInterface)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if diff := cmp.Diff([]wgtypes.Peer(nil), device.Peers); diff != "" {
+			t.Fatalf("unexpected peers (-want +got):\n%s", diff)
+		}
+	})
 }
 
 func resetDevice(t *testing.T, c *wgctrl.Client) {
