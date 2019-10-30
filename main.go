@@ -10,7 +10,6 @@ import (
 	"os"
 	"os/signal"
 	"strings"
-	"sync"
 	"syscall"
 	"time"
 
@@ -28,7 +27,6 @@ var (
 	wg         *wireguard.Wireguard
 	pf         *portforward.Portforward
 	metrics    *statsd.Client
-	m          sync.Mutex
 	appVersion string // Populated during build time
 )
 
@@ -148,9 +146,6 @@ func main() {
 }
 
 func handleEvent(event subscriber.WireguardEvent) {
-	m.Lock()
-	defer m.Unlock()
-
 	switch event.Action {
 	case "ADD":
 		wg.AddPeer(event.Peer)
@@ -173,9 +168,6 @@ func synchronize() {
 		return
 	}
 	t.Send("get_wireguard_peers_time")
-
-	m.Lock()
-	defer m.Unlock()
 
 	t = metrics.NewTiming()
 	wg.UpdatePeers(peers)
