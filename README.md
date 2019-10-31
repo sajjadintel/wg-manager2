@@ -1,6 +1,9 @@
 # wireguard-manager
 
-Daemon for configuring peers for wireguard interfaces, as well as collecting metrics from wireguard
+Daemon for configuring peers for WireGuard interfaces, and collect metrics from WireGuard
+
+This project is not affiliated with the WireGuard project.
+WireGuard is a registered trademark of Jason A. Donenfeld.
 
 ## Building
 
@@ -9,7 +12,7 @@ This will produce a `wireguard-manager` binary and put them in your `GOBIN`.
 
 ## Testing
 To run the tests, run `make test`.
-To run the integration tests as well, run `go test ./...`. Note that this requires wireguard to be running on the machine, and root privileges.
+To run the integration tests as well, run `go test ./...`. Note that this requires WireGuard to be running on the machine, and root privileges.
 
 ### Testing iptables using network namespaces
 To test iptables without messing with your system configuration, you can use network namespaces.
