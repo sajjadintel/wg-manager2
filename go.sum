@@ -117,5 +117,5 @@ gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 h1:YR8cESwS4TdDjEe65xsg0ogR
 gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
 gopkg.in/yaml.v2 v2.2.2 h1:ZCJp+EgiOT7lHqUV2J862kp8Qj64Jo6az82+3Td9dZw=
 gopkg.in/yaml.v2 v2.2.2/go.mod h1:hI93XBmqTisBFMUTm0b8Fm+jr3Dg1NNxqwp+5A1VGuI=
-nhooyr.io/websocket v1.7.1 h1:W8X03PI0a2fiKb3Srck2gpmWr8UwJqDGndXw8bb93yM=
-nhooyr.io/websocket v1.7.1/go.mod h1:FyTYp9aYEPchTiPpXj2mOOnHJ49S35YStWZCjotwizg=
+nhooyr.io/websocket v1.7.2 h1:aIkwzOCACzgKF5DMqGA9pvJoJCiP0GsBeomGWVexRTc=
+nhooyr.io/websocket v1.7.2/go.mod h1:FyTYp9aYEPchTiPpXj2mOOnHJ49S35YStWZCjotwizg=

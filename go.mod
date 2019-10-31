@@ -18,5 +18,5 @@ require (
 	golang.org/x/sys v0.0.0-20191029155521-f43be2a4598c // indirect
 	golang.zx2c4.com/wireguard/wgctrl v0.0.0-20191028205011-23406de29c08
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
-	nhooyr.io/websocket v1.7.1
+	nhooyr.io/websocket v1.7.2
 )
