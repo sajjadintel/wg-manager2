@@ -16,10 +16,10 @@ import (
 	"github.com/DMarby/jitter"
 	"github.com/infosum/statsd"
 	"github.com/jamiealquiza/envy"
-	"github.com/mullvad/wireguard-manager/api"
-	"github.com/mullvad/wireguard-manager/api/subscriber"
-	"github.com/mullvad/wireguard-manager/portforward"
-	"github.com/mullvad/wireguard-manager/wireguard"
+	"github.com/mullvad/wg-manager/api"
+	"github.com/mullvad/wg-manager/api/subscriber"
+	"github.com/mullvad/wg-manager/portforward"
+	"github.com/mullvad/wg-manager/wireguard"
 )
 
 var (
@@ -61,7 +61,7 @@ func main() {
 		os.Exit(0)
 	}
 
-	log.Printf("starting wireguard-manager %s", appVersion)
+	log.Printf("starting wg-manager %s", appVersion)
 
 	// Initialize metrics
 	var err error

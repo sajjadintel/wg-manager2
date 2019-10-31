@@ -7,9 +7,9 @@ import (
 	"time"
 
 	"github.com/infosum/statsd"
-	"github.com/mullvad/wireguard-manager/api"
+	"github.com/mullvad/wg-manager/api"
 
-	"github.com/mullvad/wireguard-manager/iputil"
+	"github.com/mullvad/wg-manager/iputil"
 	"golang.zx2c4.com/wireguard/wgctrl"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )

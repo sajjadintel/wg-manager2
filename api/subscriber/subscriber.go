@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/mullvad/wireguard-manager/api"
+	"github.com/mullvad/wg-manager/api"
 	"nhooyr.io/websocket"
 	"nhooyr.io/websocket/wsjson"
 )

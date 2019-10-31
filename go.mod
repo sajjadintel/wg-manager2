@@ -1,4 +1,4 @@
-module github.com/mullvad/wireguard-manager
+module github.com/mullvad/wg-manager
 
 go 1.13
 

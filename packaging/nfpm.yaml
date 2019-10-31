@@ -5,7 +5,7 @@ version: "${VERSION}"
 maintainer: Mullvad Developers
 bindir: "/usr/local/bin"
 files:
-  ./wireguard-manager: "/usr/local/bin/wireguard-manager"
+  ./wg-manager: "/usr/local/bin/wg-manager"
 config_files:
   ./packaging/wireguard-manager.service: "/etc/systemd/system/wireguard-manager.service"
 overrides:

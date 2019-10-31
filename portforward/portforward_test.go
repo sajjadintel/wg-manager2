@@ -8,8 +8,8 @@ import (
 	"github.com/coreos/go-iptables/iptables"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/mullvad/wireguard-manager/api"
-	"github.com/mullvad/wireguard-manager/portforward"
+	"github.com/mullvad/wg-manager/api"
+	"github.com/mullvad/wg-manager/portforward"
 )
 
 // Integration tests for portforwarding, not ran in short mode

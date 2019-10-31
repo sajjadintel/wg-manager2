@@ -4,7 +4,7 @@ import (
 	"net"
 	"testing"
 
-	"github.com/mullvad/wireguard-manager/iputil"
+	"github.com/mullvad/wg-manager/iputil"
 )
 
 var ipNet = []net.IPNet{

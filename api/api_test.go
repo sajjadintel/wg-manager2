@@ -9,7 +9,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/mullvad/wireguard-manager/api"
+	"github.com/mullvad/wg-manager/api"
 )
 
 var fixture = api.WireguardPeerList{

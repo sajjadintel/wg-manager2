@@ -10,8 +10,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mullvad/wireguard-manager/api"
-	"github.com/mullvad/wireguard-manager/api/subscriber"
+	"github.com/mullvad/wg-manager/api"
+	"github.com/mullvad/wg-manager/api/subscriber"
 	"nhooyr.io/websocket"
 	"nhooyr.io/websocket/wsjson"
 )
