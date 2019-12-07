@@ -30,6 +30,7 @@ All options can be either configured via command line flags, or via their respec
 To get a list of all the options, run `wg-manager -h`.
 
 When installed via the `.deb` package, a user named `wireguard-manager` will be created for the service to run as, as well as a systemd service named `wireguard-manager.service`.
+The name of the binary when installed via the `.deb` package is `wireguard-manager`.
 Configuration is done by creating a file at `/etc/default/wireguard-manager` and defining the environment variables there.
 All logs are sent to stdout/stderr, so in order to debug issues with the service, simply use `journalctl` or `systemctl status`.
 
