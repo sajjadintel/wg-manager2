@@ -77,7 +77,7 @@ func main() {
 		Password: *password,
 		BaseURL:  *url,
 		Client: &http.Client{
-			Timeout: time.Second * 10, // By default http.Client doesn't have a timeout, so specify a reasonable one
+			Timeout: time.Second * 15, // By default http.Client doesn't have a timeout, so specify a reasonable one
 		},
 	}
 
