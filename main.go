@@ -113,6 +113,7 @@ func main() {
 		Password: *mqPassword,
 		BaseURL:  *mqURL,
 		Channel:  *mqChannel,
+		Metrics:  metrics,
 	}
 	eventChannel := make(chan subscriber.WireguardEvent)
 	defer close(eventChannel)

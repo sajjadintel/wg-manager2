@@ -10,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/infosum/statsd"
 	"github.com/mullvad/wg-manager/api"
 	"github.com/mullvad/wg-manager/api/subscriber"
 	"nhooyr.io/websocket"
@@ -60,11 +61,17 @@ func TestSubscriber(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	metrics, err := statsd.New()
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	s := subscriber.Subscriber{
 		BaseURL:  "ws://" + parsedURL.Host,
 		Channel:  "test",
 		Username: username,
 		Password: password,
+		Metrics:  metrics,
 	}
 
 	channel := make(chan subscriber.WireguardEvent)
