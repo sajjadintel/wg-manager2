@@ -77,7 +77,7 @@ func main() {
 		Password: *password,
 		BaseURL:  *url,
 		Client: &http.Client{
-			Timeout: time.Second * 10, // By default http.Client doesn't have a timeout, so specify a reasonable one
+			Timeout: time.Second * 15, // By default http.Client doesn't have a timeout, so specify a reasonable one
 		},
 	}
 
@@ -113,6 +113,7 @@ func main() {
 		Password: *mqPassword,
 		BaseURL:  *mqURL,
 		Channel:  *mqChannel,
+		Metrics:  metrics,
 	}
 	eventChannel := make(chan subscriber.WireguardEvent)
 	defer close(eventChannel)

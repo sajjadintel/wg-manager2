@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/infosum/statsd"
 	"github.com/mullvad/wg-manager/api"
 	"nhooyr.io/websocket"
 	"nhooyr.io/websocket/wsjson"
@@ -18,6 +19,7 @@ type Subscriber struct {
 	Password string
 	BaseURL  string
 	Channel  string
+	Metrics  *statsd.Client
 }
 
 // WireguardEvent is a wireguard key event
@@ -65,7 +67,8 @@ func (s *Subscriber) read(ctx context.Context, channel chan<- WireguardEvent, co
 		v := WireguardEvent{}
 		err := wsjson.Read(ctx, conn, &v)
 		if err != nil {
-			log.Println("error reading from websocket, reconnecting")
+			log.Println("error reading from websocket, reconnecting", err)
+			s.Metrics.Increment("websocket_error")
 
 			// Make sure the connection is closed
 			conn.Close(websocket.StatusInternalError, "")
@@ -87,8 +90,10 @@ func (s *Subscriber) reconnect(ctx context.Context, channel chan<- WireguardEven
 	// Attempt to create a new connection
 	err := s.connect(ctx, channel)
 	if err != nil {
+		s.Metrics.Increment("websocket_reconnect_error")
 		go s.reconnect(ctx, channel)
 	} else {
 		log.Println("successfully reconnected to websocket")
+		s.Metrics.Increment("websocket_reconnect_success")
 	}
 }
