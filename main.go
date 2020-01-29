@@ -34,6 +34,7 @@ func main() {
 	// Set up commandline flags
 	interval := flag.Duration("interval", time.Minute, "how often wireguard peers will be synchronized with the api")
 	delay := flag.Duration("delay", time.Second*45, "max random delay for the synchronization")
+	apiTimeout := flag.Duration("api-timeout", time.Second*30, "max duration for API requests")
 	url := flag.String("url", "https://example.com", "api url")
 	username := flag.String("username", "", "api username")
 	password := flag.String("password", "", "api password")
@@ -77,7 +78,7 @@ func main() {
 		Password: *password,
 		BaseURL:  *url,
 		Client: &http.Client{
-			Timeout: time.Second * 15, // By default http.Client doesn't have a timeout, so specify a reasonable one
+			Timeout: *apiTimeout,
 		},
 	}
 
