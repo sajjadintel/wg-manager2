@@ -1,11 +1,11 @@
 name: "wireguard-manager"
 arch: "amd64"
 platform: "linux"
-version: "${VERSION}"
+version: "1.2"
 maintainer: Mullvad Developers
 bindir: "/usr/local/bin"
 files:
-  ./wg-manager: "/usr/local/bin/wireguard-manager"
+  ./: "/usr/local/bin/wireguard-manager"
 config_files:
   ./packaging/wireguard-manager.service: "/etc/systemd/system/wireguard-manager.service"
 overrides:

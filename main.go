@@ -35,18 +35,18 @@ func main() {
 	interval := flag.Duration("interval", time.Minute, "how often wireguard peers will be synchronized with the api")
 	delay := flag.Duration("delay", time.Second*45, "max random delay for the synchronization")
 	apiTimeout := flag.Duration("api-timeout", time.Second*30, "max duration for API requests")
-	url := flag.String("url", "https://example.com", "api url")
-	username := flag.String("username", "", "api username")
-	password := flag.String("password", "", "api password")
+	url := flag.String("url", "https://api.connectvpn.net/v1", "api url")
+	username := flag.String("username", "test", "api username")
+	password := flag.String("password", "test", "api password testw2")
 	interfaces := flag.String("interfaces", "wg0", "wireguard interfaces to configure. Pass a comma delimited list to configure multiple interfaces, eg 'wg0,wg1,wg2'")
 	portForwardingChain := flag.String("portforwarding-chain", "PORTFORWARDING", "iptables chain to use for portforwarding")
 	portForwardingIpsetIPv4 := flag.String("portforwarding-ipset-ipv4", "PORTFORWARDING_IPV4", "ipset table to use for portforwarding for ipv4 addresses.")
 	portForwardingIpsetIPv6 := flag.String("portforwarding-ipset-ipv6", "PORTFORWARDING_IPV6", "ipset table to use for portforwarding for ipv6 addresses.")
 	statsdAddress := flag.String("statsd-address", "127.0.0.1:8125", "statsd address to send metrics to")
-	mqURL := flag.String("mq-url", "wss://example.com/mq", "message-queue url")
-	mqUsername := flag.String("mq-username", "", "message-queue username")
-	mqPassword := flag.String("mq-password", "", "message-queue password")
-	mqChannel := flag.String("mq-channel", "wireguard", "message-queue channel")
+	mqURL := flag.String("mq-url", "ws://95.217.73.36:1323/v1", "message-queue url")
+	mqUsername := flag.String("mq-username", "test", "message-queue username")
+	mqPassword := flag.String("mq-password", "test", "message-queue password")
+	mqChannel := flag.String("mq-channel", "main", "message-queue channel")
 
 	// Parse environment variables
 	envy.Parse("WG")
@@ -62,7 +62,7 @@ func main() {
 		os.Exit(0)
 	}
 
-	log.Printf("starting wg-manager %s", appVersion)
+	log.Printf("starting2 wg-manager %s", appVersion)
 
 	// Initialize metrics
 	var err error
